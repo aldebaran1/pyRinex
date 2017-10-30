@@ -7,7 +7,7 @@ Created on Fri Jun 30 14:49:04 2017
 from setuptools import setup
 
 setup(name='pyRinex',
-      packages=['rinex'],
+      packages=['pyRinex'],
       description='Conversion utilities for GPS and GLONASS Rinex files 2.11',
       author='Sebastijan Mrak',
       url='https://github.com/aldebaran1/pyRinex',
