@@ -12,8 +12,6 @@ import glob
 import numpy as np
 import subprocess
 from pymap3d.coordconv3d import ecef2geodetic
-from mpl_toolkits.basemap import Basemap
-import matplotlib.pyplot as plt
 
 def getRxList(folder, sufix):
     filestr = os.path.join(folder,sufix)
@@ -23,26 +21,6 @@ def getRxList(folder, sufix):
         head, tail = os.path.split(f)
         rx.append(tail[0:8])
     return rx
-
-def plotRxMap(latlim=[30,65],lonlim=[-20,50],parallels=[],meridians=[],rxlist=''):
-    """
-    """
-    if rxlist != '':
-        (fig,ax) = plt.subplots(1,1,figsize=(16,12),facecolor='w')
-        m = Basemap(projection='merc',resolution='i',
-        llcrnrlat=latlim[0],urcrnrlat=latlim[1],llcrnrlon=lonlim[0],urcrnrlon=lonlim[1])
-        m.drawcoastlines()
-#        m.drawstates()
-        m.drawcountries()
-        m.drawparallels(parallels, labels=[1,0,0,0], linewidth=0.25)
-        m.drawmeridians(meridians, labels=[0,0,0,1], linewidth=0.25)
-    
-    fn = h5py.File(rxlist, 'r')
-    lat = fn['data/table'][:,0]
-    lon = fn['data/table'][:,1]
-    x,y = m(lon,lat)
-    m.scatter(x,y,s=15,color='r')
-    
 
 def writeRxlist2HDF(rxfolder='/media/smrak/Eclipse2017/Eclipse/cors/all/233/',
                     sufix='*.yaml',listfn=None):
@@ -69,12 +47,6 @@ def writeRxlist2HDF(rxfolder='/media/smrak/Eclipse2017/Eclipse/cors/all/233/',
         asciiList = [n.encode("ascii", "ignore") for n in rxlist]
         tab.create_dataset('rx', (len(asciiList),1),'S10', asciiList)
         h5file.close()
-        
-#fn = '/media/smrak/Eclipse2017/Eclipse/2017/233/'
-#listfn = '/media/smrak/Eclipse2017/Eclipse/2017/rx'
-#
-#writeRxlist2HDF(rxfolder=fn, listfn=listfn)
-#l = plotRxMap(rxlist=listfn+'.h5')
 
 if __name__ == '__main__':
     from argparse import ArgumentParser
