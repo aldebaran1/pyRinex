@@ -7,18 +7,31 @@ Created on Thu Feb  8 12:09:46 2018
 """
 import h5py
 import yaml
+import numpy as np
 from mpl_toolkits.basemap import Basemap
 import matplotlib.pyplot as plt
+import os
 
+def filterRxstations(rxlist='', latlim=[-90,90],lonlim=[-180,180]):
+    """
+    """
+    fn = h5py.File(rxlist, 'r')
+    lat = fn['data/table'][:,0]
+    lon = fn['data/table'][:,1]
+    lat = lat[~np.isnan(lat)]
+    lon = lon[~np.isnan(lon)]
+    idx = np.where((lat>=latlim[0]) & (lat<=latlim[1]) & \
+                   (lon>=lonlim[0]) & (lon<=lonlim[1]))[0]
+    return lat[idx].shape[0]
 
 def plotRxMap(latlim=[30,65],lonlim=[-20,50],parallels=[],meridians=[],
-              projection='merc', res='i', ms=15, c='r', rxlist=''):
+              projection='merc', res='i', ms=15, c='r', rxlist='',save=False):
     """
     """
     if rxlist != '':
         (fig,ax) = plt.subplots(1,1,figsize=(16,12),facecolor='w')
         m = Basemap(projection=projection,resolution=res,
-                    lat_0 = latlim[1]/2, lon_0=lonlim[1]/2,
+                    lat_0 = int(np.mean(latlim)), lon_0=int(np.mean(lonlim)),
                     llcrnrlat=latlim[0],urcrnrlat=latlim[1],
                     llcrnrlon=lonlim[0],urcrnrlon=lonlim[1])
         m.drawcoastlines()
@@ -32,13 +45,25 @@ def plotRxMap(latlim=[30,65],lonlim=[-20,50],parallels=[],meridians=[],
     lon = fn['data/table'][:,1]
     x,y = m(lon,lat)
     m.scatter(x,y,s=ms,color=c)
-    plt.show()
+    
+    if save:
+        head, tail = os.path.split(rxlist)
+        plt.savefig(head+'/rxmap_' +str(lonlim[0])+str(lonlim[1])+'_'+
+                                   str(latlim[0])+str(latlim[1])+'_'+
+                                   projection+'.png', dpi=300)
+        plt.close()
+        return
+    else:
+        plt.show()
+        return
+        
     
 if __name__ == '__main__':
     from argparse import ArgumentParser
     p = ArgumentParser()
     p.add_argument('hdffile',type=str)
     p.add_argument('-c', '--cfg', help='yaml configuration file')
+    p.add_argument('-s', '--save', help='save the plot? T/F', default=0, type=bool)
     P = p.parse_args()
     
     cfg_file = P.cfg
@@ -54,6 +79,8 @@ if __name__ == '__main__':
     parallels = stream.get('parallels')
     meridians = stream.get('meridians')
     
+    rxnr = filterRxstations(rxlist=rxlist, latlim=latlim, lonlim=lonlim)
+    print (rxnr)
     plotRxMap(latlim=latlim, lonlim=lonlim, parallels=parallels, meridians=meridians,
-              projection=projection, res=resolution, ms=ms, rxlist=rxlist)
+              projection=projection, res=resolution, ms=ms, rxlist=rxlist, save=P.save)
     

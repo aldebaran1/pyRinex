@@ -1,9 +1,9 @@
-{ #stere, merc,
-lonlim: [-15, 60],
-latlim: [25, 85],
-projection: stere,
+{ #stere, merc,npstere
+lonlim: [-160, 160],
+latlim: [20, 85],
+projection: hammer,
 resolution: l,
-marker_size: 15,
+marker_size: 5,
 marker_color: r,
 parallels: [20,40,60],
 meridians: [-10,10,30,50]
