@@ -1,0 +1,10 @@
+{ #stere, merc,
+lonlim: [-15, 60],
+latlim: [25, 85],
+projection: stere,
+resolution: l,
+marker_size: 15,
+marker_color: r,
+parallels: [20,40,60],
+meridians: [-10,10,30,50]
+}
