@@ -12,6 +12,11 @@ from time import sleep
 from gsit import pyRinex
 
 def convertObs2HDF(folder=None, sufix=None):
+    """
+    This script converts headers from the RINEX 2.11 observation files in a 
+    YAML configuration file, organized as a dictionary, utilizing pyRINEX 
+    script. Find the script in the main directory.
+    """
     if sufix is None:
         wlist = ['*.**o', '*.**O']
     for wlstr in wlist:

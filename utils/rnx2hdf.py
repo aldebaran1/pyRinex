@@ -11,16 +11,18 @@ from time import sleep
 from gsit import pyRinex
 
 def convertObs2HDF(folder=None, sufix=None):
+    """
+    This script converts RINEX 2.11 observation files in a given directory into
+    a hdf5 organized data structure, utilizing pyRINEX script. Find the script
+    in the main directory.
+    """
     if sufix is None:
         wlist = ['*.**o', '*.**O']
-        dec = ''
     else:
         wlstr = sufix
-        dec = str(sufix)[2:4]
     for wlstr in wlist:
         filestr = os.path.join(folder,wlstr)
         flist = sorted(glob.glob(filestr))
-    #    print (flist)
         for file in flist:
             print (file)
             head, tail = os.path.split(file)

@@ -13,6 +13,12 @@ import subprocess
 
 def crx2rx(folder):
     """
+    A function utilizin CRX2RNX script to decompress the RINEX observation 
+    files with a *.YYd extension into a *.YYo extension. 
+    The script also removes all unnecessary junk from the given directory e.g.,
+    .crx and .YYd files.
+    The input is a directory, and it automatically finds all files needed to be
+    decompressed.
     """
     suffix = ['*.**D', '*.**d']
     for wlstr in suffix:
