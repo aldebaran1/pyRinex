@@ -14,6 +14,9 @@ import os
 
 def filterRxstations(rxlist='', latlim=[-90,90],lonlim=[-180,180]):
     """
+    Count the total number of recivers withing lat/lon boundary. Return a 
+    number. INput variable/arg "rxlist" is a hdf5 archive containtg a pool of 
+    all possible receivers. Boundaries are given as lists!
     """
     fn = h5py.File(rxlist, 'r')
     lat = fn['data/table'][:,0]
@@ -27,6 +30,14 @@ def filterRxstations(rxlist='', latlim=[-90,90],lonlim=[-180,180]):
 def plotRxMap(latlim=[30,65],lonlim=[-20,50],parallels=[],meridians=[],
               projection='merc', res='i', ms=15, c='r', rxlist='',save=False):
     """
+    The function plots receivers' locations on a global map with a set of comp-
+    limentary parameters. The parameters must be specified in adjacent .yaml
+    file. The function utilizes Basemap library, and the positions are rendered
+    as a scatter plot with adjustable color and marker size. 
+    If you want to save a plot, use an optioanl argument "save" and set it to 
+    True. The script will save the map as a PNG image in the same directory as
+    the rxlist.h5 is located. If you choose this option, than the figure won't
+    render in a separate figure viewer.
     """
     if rxlist != '':
         (fig,ax) = plt.subplots(1,1,figsize=(16,12),facecolor='w')
@@ -80,7 +91,9 @@ if __name__ == '__main__':
     meridians = stream.get('meridians')
     
     rxnr = filterRxstations(rxlist=rxlist, latlim=latlim, lonlim=lonlim)
+    # Print the number of recevers in a given lat-lon boundaries
     print (rxnr)
+    # Plot the receiver positions
     plotRxMap(latlim=latlim, lonlim=lonlim, parallels=parallels, meridians=meridians,
               projection=projection, res=resolution, ms=ms, rxlist=rxlist, save=P.save)
     

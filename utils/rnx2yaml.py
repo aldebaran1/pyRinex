@@ -9,7 +9,7 @@ Created on Thu Feb  8 11:21:58 2018
 import os
 import glob
 from time import sleep
-from gsit import pyRinex
+from pyRinex import pyRinex
 
 def convertObs2HDF(folder=None, sufix=None):
     """
