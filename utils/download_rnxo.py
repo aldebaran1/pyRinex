@@ -8,30 +8,56 @@ Created on Fri Mar  3 13:19:38 2017
 
 from six.moves.urllib.parse import urlparse
 import ftplib
-from os.path import expanduser
-from time import sleep
+import numpy as np
+#from os.path import expanduser
+#from time import sleep
 
-def getStateList(year, day, F):
-#    url =  urlparse(url+year+'/'+day+'/')# 'ftp://geodesy.noaa.gov'
-#    lib = ftplib.FTP(url[1],'anonymous','guest',timeout=15)
-#    lib.cwd(url[2])
+def download(F, rx, filename):
+    print ('Downloading to: ', filename)
+    with open(filename, 'wb') as h:
+        F.retrbinary('RETR {}'.format(rx), h.write)
+
+def getStateList(year, day, F, db):
     d = []
     stations = []
     F.retrlines('LIST', d.append)
-    for line in d:
-        stations.append(line[:4])
-    
+    if db == 'cddis':
+        for line in d:
+            arg = line.split()[-1]
+            if (arg[-2:] == '.Z') or (arg[-2:] == 'ip') or (arg[-2:] == 'gz'):
+                argclober = arg.split('.')
+                if (len(argclober[0]) == 8):
+                    stations.append(arg)
+
+    elif db == 'cors':
+        for line in d:
+            arg = line.split()[-1]
+            if len(arg) == 4:
+                try:
+                    rx = arg+str(day)+'0.'+year[-2:]+'o.gz'
+                    stations.append(rx)
+                except Exception as e:
+                    pass
+    elif db == 'euref':
+        for line in d:
+            arg = line.split()[-1]
+            if (arg[-2:] == '.Z') or (arg[-2:] == 'ip') or (arg[-2:] == 'gz'):
+                argclober = arg.split('.')
+                if (len(argclober[0]) == 8):
+                    stations.append(arg)
+
     return np.array(stations)
 
 def getRinexObs(year,day,db,odir):
     """
-    year,month,day: integer
-    hour, minute:  start,stop integer len == 2
+    year,day: integer
+    db: the name of the database
+    odif: final directory to save the rinex files
     """
-    
+    # Dictionary with complementary FTP url addresses
     urllist = {'cddis': 'ftp://cddis.gsfc.nasa.gov/gnss/data/daily/',
                'cors':  'ftp://geodesy.noaa.gov/cors/rinex/',
-               'euref': 'ftp://www.epncb.oma.be/ftp/obs/'}
+               'euref': 'ftp://epncb.oma.be/pub/obs/'}
     url =  urlparse(urllist[db])
     if len(str(day)) == 2:
         day = '0'+str(day)
@@ -41,23 +67,58 @@ def getRinexObs(year,day,db,odir):
         day = str(day)
     else: 
         print ('Error - day has to be a string 0-365')
-
-#%% get available files for this day
+    # Open a connection to the FTP address
     with ftplib.FTP(url[1],'anonymous','guest',timeout=15) as F:
         YY = str(year)[2:]
+        # cd to the directory with observation rinex data
         if db == 'cddis':
             rpath = url[2] + '/' + year + '/' + day + '/'+YY+'o/'
-        F.cwd(rpath)
-        
-        rxlist = getStateList(year, day, F)
-        for rx in rxlist:
-            filename = rx + day + '0.' + YY + 'o.Z'
-            #download observation file
-            ofn = odir + filename
-            print ('Downloading from: ', ofn)
-            with open( ofn, 'wb') as h:
-                F.retrbinary('RETR {}'.format(filename), h.write)
-                sleep(1)
+            F.cwd(rpath)
+            # Get the name of all avaliable receivers in the direcotry
+            rxlist = getStateList(year, day, F, db)
+            print (rxlist)
+            # Download the data
+            for urlrx in rxlist:
+                # urlrx must in in a format "nnnDDD0.YYo.xxx"
+                download(F, urlrx, odir+urlrx)
+        elif db == 'cors':
+            rpath = url[2] + '/' + year + '/' + day + '/'
+            F.cwd(rpath)
+            # Get the name of all avaliable receivers in the direcotry
+            rxlist = getStateList(year, day, F, db)
+            print (rxlist)
+            # Download the data
+            for urlrx in rxlist:
+                F.cwd(rpath+urlrx[:4]+'/')
+                # urlrx must in in a format "nnnDDD0.YYo.xxx"
+                download(F, urlrx, odir+urlrx)
+        elif db == 'euref':
+            rpath = url[2] + '/' + year + '/' + day + '/'
+            F.cwd(rpath)
+            # Get the name of all avaliable receivers in the direcotry
+            rxlist = getStateList(year, day, F, db)
+            print (rxlist)
+            # Download the data
+            for urlrx in rxlist:
+                # urlrx must in in a format "nnnDDD0.YYo.xxx"
+                download(F, urlrx, odir+urlrx)
+        else:
+            exit()
+#        F.cwd(rpath)
+##        print (F.dir())
+#        rxlist = getStateList(year, day, F, db)
+##        print (rxlist)
+#        
+#        for urlrx in rxlist:
+#            # urlrx must in in a format "nnnDDD0.YYo.xxx"
+#            download(F, urlrx, odir+urlrx)
+#            ofn = odir + rx
+#            print ('Downloading from: ', ofn)
+#            with open( ofn, 'wb') as h:
+#                F.retrbinary('RETR {}'.format(rx), h.write)
+#                sleep(1)
+
+
         #download navigation file
 #        elif ftype == 'nav':
 #            fn_year = str(year)[2:]
@@ -69,9 +130,12 @@ def getRinexObs(year,day,db,odir):
 #            with open(ofn, 'wb') as h:
 #                F.retrbinary('RETR {}'.format(navfilename), h.write)
 #                sleep(1)
-        else: 
-            print ('Wrong file format -t')
             
+#year = str(2017)
+#day = str(233)
+#db = 'euref'
+#save = 'C:\\Users\\smrak\\Google Drive\\BU\\software\\pyRinex\\utils\\tmp\\'
+#getRinexObs(year,day,db,save)
 if __name__ == '__main__':
     from argparse import ArgumentParser
     p = ArgumentParser()
