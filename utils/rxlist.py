@@ -66,6 +66,6 @@ if __name__ == '__main__':
         print('the file exists. Deleting and replacing: ', P.saveto)
         subprocess.call('rm -r ' + P.saveto, shell=True)
     if P.saveto[-3:] == '.h5':
-        writeRxlist2HDF(rxfolder=P.folder, listfn=P.saveto)
+        writeRxlist2HDF(obsfolder=P.folder, listfilename=P.saveto)
     else: 
-        writeRxlist2HDF(rxfolder=P.folder, listfn=P.saveto+'.h5')
+        writeRxlist2HDF(obsfolder=P.folder, listfilename=P.saveto+'.h5')
