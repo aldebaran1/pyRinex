@@ -23,8 +23,11 @@ def unzipfolder(folder):
         flist = sorted(glob.glob(filestr))
         for file in flist:
             p = multiprocessing.Process(target=unzip, args=(file,))
-            p.start()
-            p.join(2)
+            try:
+                p.start()
+                p.join(1)
+            except Exception as e:
+                pass
 
 
 if __name__ == '__main__':
