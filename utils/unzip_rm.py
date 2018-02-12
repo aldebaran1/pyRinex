@@ -9,23 +9,23 @@ Created on Tue Jul  4 12:23:05 2017
 import glob
 import os
 import subprocess
-from time import sleep
+import multiprocessing
+#from time import sleep
 
-#folder = '/home/smrak/sharedrive/cors/al/184/'
+def unzip(f):
+    print('Unizipping: ', f)
+    subprocess.call('gzip -d ' + f, shell=True)
+
 def unzipfolder(folder):
-    suffix = ['*.gz', '*.Z']
+    suffix = ['*.gz', '*.Z', '*.zip']
     for wlstr in suffix:
-#    wlstr ='*.gz'
         filestr = os.path.join(folder,wlstr)
-        flist = glob.glob(filestr)
+        flist = sorted(glob.glob(filestr))
         for file in flist:
-            print('Unizipping: ', file)
-            subprocess.call('gzip -d ' + file, shell=True)
-            sleep(5)
-#for file in flist:
-#    print('Deleting: ', file)
-#    subprocess.call('rm -r ' + file, shell=True)
-#    sleep(3)
+            p = multiprocessing.Process(target=unzip, args=(file,))
+            p.start()
+            p.join(2)
+
 
 if __name__ == '__main__':
     from argparse import ArgumentParser
