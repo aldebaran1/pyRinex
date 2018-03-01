@@ -269,8 +269,10 @@ def scan(lines):
                     line = lines[i][32:]
                     indicator.append(line[0+(s%12)*3])
                     sat_numbers.append(int(lines[i][33+(s%12)*3:35+(s%12)*3]))
+                # Beidu sat enumerated 90-
+                indicator1 = [w.replace('S', '90') for w in indicator]
                 # GALILLEO sat enumerated 60-
-                indicator1 = [w.replace('E', '60') for w in indicator]
+                indicator1 = [w.replace('E', '60') for w in indicator1]
                 # GLONASS satellites enumerated 32-
                 indicator1 = [w.replace('R', '32') for w in indicator1]
                 # GPS satellites enumerated 0-32
