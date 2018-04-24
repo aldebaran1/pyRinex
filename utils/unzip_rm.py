@@ -9,25 +9,33 @@ Created on Tue Jul  4 12:23:05 2017
 import glob
 import os
 import subprocess
-import multiprocessing
+from threading import Thread
+#import multiprocessing
 #from time import sleep
 
 def unzip(f):
-    print('Unizipping: ', f)
+#    print('Unizipping: ', f)
     subprocess.call('gzip -d ' + f, shell=True)
+    return
 
 def unzipfolder(folder):
     suffix = ['*.gz', '*.Z', '*.zip']
     for wlstr in suffix:
         filestr = os.path.join(folder,wlstr)
         flist = sorted(glob.glob(filestr))
+        c = 1
         for file in flist:
-            p = multiprocessing.Process(target=unzip, args=(file,))
-            try:
-                p.start()
-                p.join(1)
-            except Exception as e:
-                pass
+            print('Unizipping: ' +str(c) + '/'+str(len(flist)+1))
+            thread = Thread(target=unzip, args = (file, ))
+            thread.start()
+            thread.join(5)
+            c+=1
+#            p = multiprocessing.Process(target=unzip, args=(file,))
+#            try:
+#                p.start()
+#                p.join(1)
+#            except Exception as e:
+#                pass
 
 
 if __name__ == '__main__':

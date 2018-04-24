@@ -14,8 +14,11 @@ import numpy as np
 
 def download(F, rx, filename):
     print ('Downloading to: ', filename)
-    with open(filename, 'wb') as h:
-        F.retrbinary('RETR {}'.format(rx), h.write)
+    try:
+        with open(filename, 'wb') as h:
+            F.retrbinary('RETR {}'.format(rx), h.write)
+    except:
+        pass
 
 def getStateList(year, day, F, db):
     d = []
@@ -32,9 +35,15 @@ def getStateList(year, day, F, db):
     elif db == 'cors':
         for line in d:
             arg = line.split()[-1]
-            if len(arg) == 4:
+#            if (len(arg) == 4) and (int(year) > 2014):
+#                try:
+#                    rx = arg+str(day)+'0.'+year[-2:]+'o.gz'
+#                    stations.append(rx)
+#                except Exception as e:
+#                    pass
+            if (len(arg) == 4):
                 try:
-                    rx = arg+str(day)+'0.'+year[-2:]+'o.gz'
+                    rx = arg+str(day)+'0.'+year[-2:]+'d.Z'
                     stations.append(rx)
                 except Exception as e:
                     pass
@@ -89,9 +98,12 @@ def getRinexObs(year,day,db,odir):
             print (rxlist)
             # Download the data
             for urlrx in rxlist:
-                F.cwd(rpath+urlrx[:4]+'/')
-                # urlrx must in in a format "nnnDDD0.YYo.xxx"
-                download(F, urlrx, odir+urlrx)
+                try:
+                    F.cwd(rpath+urlrx[:4]+'/')
+                    # urlrx must in in a format "nnnDDD0.YYo.xxx"
+                    download(F, urlrx, odir+urlrx)
+                except:
+                    pass
         elif db == 'euref':
             rpath = url[2] + '/' + year + '/' + day + '/'
             F.cwd(rpath)
@@ -104,45 +116,14 @@ def getRinexObs(year,day,db,odir):
                 download(F, urlrx, odir+urlrx)
         else:
             exit()
-#        F.cwd(rpath)
-##        print (F.dir())
-#        rxlist = getStateList(year, day, F, db)
-##        print (rxlist)
-#        
-#        for urlrx in rxlist:
-#            # urlrx must in in a format "nnnDDD0.YYo.xxx"
-#            download(F, urlrx, odir+urlrx)
-#            ofn = odir + rx
-#            print ('Downloading from: ', ofn)
-#            with open( ofn, 'wb') as h:
-#                F.retrbinary('RETR {}'.format(rx), h.write)
-#                sleep(1)
 
-
-        #download navigation file
-#        elif ftype == 'nav':
-#            fn_year = str(year)[2:]
-#            rpath2 = url[2] + '/' + str(year) + '/' + day + '/'
-#            F.cwd(rpath2)
-#            navfilename = 'brdc' + day + '0.' + fn_year + 'n.gz'
-#            ofn = odir + navfilename
-#            print ('Downloading: ', ofn)
-#            with open(ofn, 'wb') as h:
-#                F.retrbinary('RETR {}'.format(navfilename), h.write)
-#                sleep(1)
-            
-#year = str(2017)
-#day = str(233)
-#db = 'euref'
-#save = 'C:\\Users\\smrak\\Google Drive\\BU\\software\\pyRinex\\utils\\tmp\\'
-#getRinexObs(year,day,db,save)
 if __name__ == '__main__':
     from argparse import ArgumentParser
     p = ArgumentParser()
-    p.add_argument('year',type=int)
-    p.add_argument('day',type=int)
+    p.add_argument('year',type=str)
+    p.add_argument('day',type=str)
     p.add_argument('db',type=str, help='database acronym. Supporting: cddis, cors, euref')
     p.add_argument('dir',type=str, help='destination directory')
     P = p.parse_args()
     
-    getRinexObs(P.year, P.day, p.db, P.dir)
+    getRinexObs(P.year, P.day, P.db, P.dir)
