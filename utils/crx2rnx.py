@@ -15,7 +15,7 @@ import timeout_decorator
 @timeout_decorator.timeout(10)
 def unzip(f):
     print('Decompressing: ', f)
-    subprocess.call('./CRX2RNX ' + f, shell=True)
+    subprocess.call('./CRX2RNX ' + f, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=2)
     print('Deleting: ', f)
     subprocess.call('rm -r ' + f, shell=True)
 
@@ -33,7 +33,10 @@ def crx2rx(folder):
         filestr = os.path.join(folder,wlstr)
         flist = sorted(glob.glob(filestr))
         for f in flist:
-            unzip(f)
+            try:
+                unzip(f)
+            except:
+                pass
     suffix = '*.crx'
     filestr = os.path.join(folder,suffix)
     flist = sorted(glob.glob(filestr))
