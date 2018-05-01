@@ -47,13 +47,36 @@ $ cd utils/
 ### DOWNLOAD RINEX files from publicly available databases
 So far, there we support CORS, CDDIS and EUREF databases. First make a directory you want to download data to than:
 ``` 
-$ pytohn download_rnxo.py year day database path/to/data/
+$ pytohn download_rnxo.py year day database /path/to/data/
 ```
 ### Unzipping
 All databases provide you compressed data with .Z, .gz, or .zip extensions. Use:
 ```
-$ python unzip_rm.py path/to/data/
+$ python unzip_rm.py /path/to/data/
 ```
 to extract all files in the directory. The scripts get rid of all .Z files for you.
 ### Decompress RINEX: .YYD extension
+If the data is older than 3 months, all databases compress rinex observation files into .xxD format. To decompress the
+such files, there is a CRX2RNX executable script in the /utils folder.
+An automatic python script takes care of a whole folder of compressed observation files. Decompress the folder of downloaded data
+as follows:
+```
+$ python crx2rnx.py /path/to/data/
+```
+### Convert Observation headers into configuration (yaml) files
+Each rinex observation file starts with a header with system variables and receiver configuration. The most importnat 
+informatio we always need is a receiver position in ECEF coordinate system.
 
+An automated script converts a whole folder of rinex observation files in .xxO format into yaml files with the same name. The yaml
+configuration file is a python dictionary-like txt file, with a header information in it.
+Call the automated conversion script:
+```
+$ python rnx2yaml.py /path/to/observation/data/
+```
+### Convert RINEX Observation file into HDF5 database-like format
+RINEX files are in an awkward format for data parsing purposes. Therefore, we convert RINEX files into a HDF5 files once, and then 
+do all the processing from the HDF5 files.
+Call the automated conversion script:
+```
+$ python rnx2hdf.py /path/to/observation/data/
+```
