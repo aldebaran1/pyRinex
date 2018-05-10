@@ -12,8 +12,6 @@ import numpy as np
 import yaml
 import os
 import subprocess
-#from os.path import expanduser
-#from time import sleep
 
 def download(F, rx, filename):
     path, tail = os.path.split(filename)
@@ -33,7 +31,6 @@ def getSingleRxUrl(year, day, F, db, rxn):
     d = []
     F.retrlines('LIST', d.append)
     # Find the files
-    
     # CDDIS db
     if db == 'cddis':
         if isinstance(rxn, str):
@@ -206,5 +203,11 @@ if __name__ == '__main__':
                    be downloaded in yaml cfg format. Look at the example file \
                    dl_list.yaml', default=None)
     P = p.parse_args()
-    
-    getRinexObs(P.year, P.day, P.db, P.dir, rx=P.rx, dllist=P.dllist)
+    if P.db == 'all':
+        a = ['cors', 'cddis', 'euref']
+        for db in a:
+            getRinexObs(P.year, P.day, db, P.dir, rx=P.rx, dllist=P.dllist)
+            
+    else:
+        getRinexObs(P.year, P.day, P.db, P.dir, rx=P.rx, dllist=P.dllist)
+            

@@ -10,11 +10,7 @@ import glob
 import os
 import subprocess
 from threading import Thread
-#import multiprocessing
-#from time import sleep
-
 def unzip(f):
-#    print('Unizipping: ', f)
     subprocess.call('gzip -d ' + f, shell=True)
     return
 
@@ -30,13 +26,6 @@ def unzipfolder(folder):
             thread.start()
             thread.join(5)
             c+=1
-#            p = multiprocessing.Process(target=unzip, args=(file,))
-#            try:
-#                p.start()
-#                p.join(1)
-#            except Exception as e:
-#                pass
-
 
 if __name__ == '__main__':
     from argparse import ArgumentParser
