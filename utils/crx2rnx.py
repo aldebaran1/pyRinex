@@ -10,9 +10,6 @@ import glob
 import os
 import subprocess
 
-import timeout_decorator
-
-@timeout_decorator.timeout(10)
 def unzip(f):
     print('Decompressing: ', f)
     subprocess.call('./CRX2RNX ' + f, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=2)
