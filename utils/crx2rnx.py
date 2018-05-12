@@ -9,12 +9,27 @@ Created on Thu Feb  8 10:38:16 2018
 import glob
 import os
 import subprocess
+import platform
 
 def unzip(f):
-    print('Decompressing: ', f)
-    subprocess.call('./CRX2RNX ' + f, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=2)
-    print('Deleting: ', f)
-    subprocess.call('rm -r ' + f, shell=True)
+    if platform.system() == 'Linux':
+        try:
+            print('Decompressing: ', f)
+            subprocess.call('./CRX2RNX ' + f, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=2)
+            print('Deleting: ', f)
+            subprocess.call('rm -r ' + f, shell=True)
+        except:
+            print('Problems with: ',f)
+    elif platform.system() == 'Windows':
+        try:
+            print('Decompressing: ', f)
+            subprocess.call('crx2rnx.exe {}'.format(f), shell=True, timeout=5)
+            print('Deleting: ',f)
+            subprocess.call('del {}'.format(f), shell=True,timeout=5)
+        except:
+            print('Problems with: ',f)
+        
+    return
 
 def crx2rx(folder):
     """
@@ -30,11 +45,9 @@ def crx2rx(folder):
         filestr = os.path.join(folder,wlstr)
         flist = sorted(glob.glob(filestr))
         for f in flist:
-            try:
-                unzip(f)
-            except:
-                pass
-    suffix = '*.crx'
+            unzip(f)
+    
+    suffix.append('*.crx')
     filestr = os.path.join(folder,suffix)
     flist = sorted(glob.glob(filestr))
     for f in flist:
