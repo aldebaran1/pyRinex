@@ -21,7 +21,7 @@ def download(F, rx, filename):
             subprocess.call('mkdir ' + path, shell=True)
         except:
             print ('Cant make the directory')
-    if not os.path.exists(filename):
+    if not os.path.exists(filename[:-5]):
         print ('Downloading to file: {}'.format(tail))
         try:
             with open(filename, 'wb') as h:
@@ -134,7 +134,7 @@ def getRinexObs(year,day,db,odir,rx=None, dllist=None):
     odif: final directory to save the rinex files
     """
     # Designator
-    if platform.system() == 'linux':
+    if platform.system() == 'Linux':
         des = '/'
     elif platform.system() == 'Windows':
         des = '\\'
