@@ -22,7 +22,7 @@ def download(F, rx, filename):
         except:
             print ('Cant make the directory')
     if not os.path.exists(filename[:-5]):
-        print ('Downloading to file: {}'.format(tail))
+        print ('Downloading file: {}'.format(tail))
         try:
             with open(filename, 'wb') as h:
                 F.retrbinary('RETR {}'.format(rx), h.write)
