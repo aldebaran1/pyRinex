@@ -12,6 +12,7 @@ import numpy as np
 import yaml
 import os
 import subprocess
+import platform
 
 def download(F, rx, filename):
     path, tail = os.path.split(filename)
@@ -20,13 +21,15 @@ def download(F, rx, filename):
             subprocess.call('mkdir ' + path, shell=True)
         except:
             print ('Cant make the directory')
-    print ('Downloading to: ', filename)
-    try:
-        with open(filename, 'wb') as h:
-            F.retrbinary('RETR {}'.format(rx), h.write)
-    except:
-        pass
-    
+    if not os.path.exists(filename):
+        print ('Downloading to file: {}'.format(tail))
+        try:
+            with open(filename, 'wb') as h:
+                F.retrbinary('RETR {}'.format(rx), h.write)
+        except:
+            pass
+    else:
+        print ('{} File already exists'.format(tail))
 def getSingleRxUrl(year, day, F, db, rxn):
     d = []
     F.retrlines('LIST', d.append)
@@ -66,6 +69,19 @@ def getSingleRxUrl(year, day, F, db, rxn):
         idrx = np.where(np.isin(ds,match))[0]
         if idrx.shape[0] > 0:
             stations = ds[idrx]
+    # UNAVCO db
+    elif db == 'unavco':
+        if isinstance(rxn, str):
+            match =rxn + day + '0.'+year[-2:]+'d.Z'
+        elif isinstance(rxn, list):
+            match = [r + day + '0.'+year[-2:]+'d.Z' for r in rxn]
+            match = np.array(match)
+        ds = [line.split()[-1] for line in d]
+        ds = np.array(ds)
+        idrx = np.where(np.isin(ds,match))[0]
+        if idrx.shape[0] > 0:
+            stations = ds[idrx]
+        
     # Return
     return stations
 def getStateList(year, day, F, db, rxn=None):
@@ -102,6 +118,12 @@ def getStateList(year, day, F, db, rxn=None):
                     argclober = arg.split('.')
                     if (len(argclober[0]) == 8):
                         stations.append(arg)
+                        
+        elif db == 'unavco':
+            for line in d:
+                arg = line.split()[-1]
+                if (arg[-3:] == 'd.Z'):
+                    stations.append(arg)
     
     return stations
 
@@ -111,10 +133,16 @@ def getRinexObs(year,day,db,odir,rx=None, dllist=None):
     db: the name of the database
     odif: final directory to save the rinex files
     """
+    # Designator
+    if platform.system() == 'linux':
+        des = '/'
+    elif platform.system() == 'Windows':
+        des = '\\'
     # Dictionary with complementary FTP url addresses
     urllist = {'cddis': 'ftp://cddis.gsfc.nasa.gov/gnss/data/daily/',
                'cors':  'ftp://geodesy.noaa.gov/cors/rinex/',
-               'euref': 'ftp://epncb.oma.be/pub/obs/'}
+               'euref': 'ftp://epncb.oma.be/pub/obs/',
+               'unavco': 'ftp://data-out.unavco.org/pub/rinex/obs/'}
     url =  urlparse(urllist[db])
     # Correct spelling to unify the length (char) of the day in year (DOY)
     if len(str(day)) == 2:
@@ -127,13 +155,13 @@ def getRinexObs(year,day,db,odir,rx=None, dllist=None):
         print ('Error - day has to be a string 0-365')
         
     # Complete the save directory path
-    odir += year+'/'
+    odir += year + des
     if not os.path.exists(odir):
         try:
             subprocess.call('mkdir ' + odir, shell=True)
         except:
             print ('Cant make the directory')
-    odir += day+'/'
+    odir += day + des
     if not os.path.exists(odir):
         try:
             subprocess.call('mkdir ' + odir, shell=True)
@@ -159,6 +187,7 @@ def getRinexObs(year,day,db,odir,rx=None, dllist=None):
             rxlist = getStateList(year, day, F, db, rxn=rx)
             print (rxlist)
             # Download the data
+            print ('Downloading to: ', odir)
             for urlrx in rxlist:
                 # urlrx must in in a format "nnnDDD0.YYo.xxx"
                 download(F, urlrx, odir+urlrx)
@@ -169,6 +198,7 @@ def getRinexObs(year,day,db,odir,rx=None, dllist=None):
             rxlist = getStateList(year, day, F, db, rxn=rx)
             print (rxlist)
             # Download the data
+            print ('Downloading to: ', odir)
             for urlrx in rxlist:
                 try:
                     F.cwd(rpath+urlrx[:4]+'/')
@@ -183,6 +213,18 @@ def getRinexObs(year,day,db,odir,rx=None, dllist=None):
             rxlist = getStateList(year, day, F, db, rxn=rx)
             print (rxlist)
             # Download the data
+            print ('Downloading to: ', odir)
+            for urlrx in rxlist:
+                # urlrx must in in a format "nnnDDD0.YYo.xxx"
+                download(F, urlrx, odir+urlrx)
+        elif db == 'unavco':
+            rpath = url[2] + '/' + year + '/' + day + '/'
+            F.cwd(rpath)
+            # Get the name of all avaliable receivers in the direcotry
+            rxlist = getStateList(year, day, F, db, rxn=rx)
+            print (rxlist)
+            # Download the data
+            print ('Downloading to: ', odir)
             for urlrx in rxlist:
                 # urlrx must in in a format "nnnDDD0.YYo.xxx"
                 download(F, urlrx, odir+urlrx)
@@ -204,7 +246,7 @@ if __name__ == '__main__':
                    dl_list.yaml', default=None)
     P = p.parse_args()
     if P.db == 'all':
-        a = ['cors', 'cddis', 'euref']
+        a = ['cors', 'cddis', 'euref', 'unavco']
         for db in a:
             getRinexObs(P.year, P.day, db, P.dir, rx=P.rx, dllist=P.dllist)
             
