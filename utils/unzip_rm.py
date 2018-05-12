@@ -9,9 +9,21 @@ Created on Tue Jul  4 12:23:05 2017
 import glob
 import os
 import subprocess
-from threading import Thread
+import platform
+
 def unzip(f):
-    subprocess.call('gzip -d ' + f, shell=True)
+    head, tail = os.path.split(f)
+    if platform.system() == 'Linux':
+        try:
+            subprocess.call('gzip -d ' + f, shell=True,timeout=5)
+        except:
+            print ('Problems with: ',tail)
+    elif platform.system() == 'Windows':
+        try:
+            subprocess.call('7z x {} -o{}'.format(f,head), shell=True,timeout=5)
+            subprocess.call('del {}'.format(f), shell=True,timeout=5)
+        except:
+            print ('Problems with: ',tail)
     return
 
 def unzipfolder(folder):
@@ -22,9 +34,7 @@ def unzipfolder(folder):
         c = 1
         for file in flist:
             print('Unizipping: ' +str(c) + '/'+str(len(flist)+1))
-            thread = Thread(target=unzip, args = (file, ))
-            thread.start()
-            thread.join(5)
+            unzip(file)
             c+=1
 
 if __name__ == '__main__':
