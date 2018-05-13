@@ -48,11 +48,16 @@ def crx2rx(folder):
             unzip(f)
     
     suffix.append('*.crx')
-    filestr = os.path.join(folder,suffix)
-    flist = sorted(glob.glob(filestr))
-    for f in flist:
-        print('Deleting: ', f)
-        subprocess.call('rm -r ' + f, shell=True)
+    for suffix in suffix:
+        filestr = os.path.join(folder,suffix)
+        flist = sorted(glob.glob(filestr))
+        for f in flist:
+            if platform.system() == 'Linux':
+                print('Deleting: ', f)
+                subprocess.call('rm -r ' + f, shell=True)
+            elif platform.system() == 'Windows':
+                print('Deleting: ', f)
+                subprocess.call('del {}'.format(f), shell=True,timeout=5)
 
         
 if __name__ == '__main__':
