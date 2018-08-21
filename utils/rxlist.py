@@ -53,7 +53,7 @@ def writeRxlist2HDF(obsfolder='/media/smrak/Eclipse2017/Eclipse/cors/all/233/',
             table[c,:] = [rec_lat, rec_lon]
             c+=1
         except Exception as e:
-            print (rx)
+            print ('Couldnt process: ', rx)
             c+=1
     h5file = h5py.File(listfilename, 'w')
     tab = h5file.create_group('data')

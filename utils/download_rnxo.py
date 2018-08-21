@@ -142,7 +142,8 @@ def getRinexObs(year,day,db,odir,rx=None, dllist=None):
     urllist = {'cddis': 'ftp://cddis.gsfc.nasa.gov/gnss/data/daily/',
                'cors':  'ftp://geodesy.noaa.gov/cors/rinex/',
                'euref': 'ftp://epncb.oma.be/pub/obs/',
-               'unavco': 'ftp://data-out.unavco.org/pub/rinex/obs/'}
+               'unavco': 'ftp://data-out.unavco.org/pub/rinex/obs/',
+               'ring': 'ftp://bancadati2.gm.ingv.it:2121/OUTGOING/RINEX30/RING/'}
     url =  urlparse(urllist[db])
     # Correct spelling to unify the length (char) of the day in year (DOY)
     if len(str(day)) == 2:
