@@ -20,8 +20,8 @@ def unzip(f):
             print ('Problems with: ',tail)
     elif platform.system() == 'Windows':
         try:
-            subprocess.call('7z x {} -o{}'.format(f,head), shell=True,timeout=5)
-            subprocess.call('del {}'.format(f), shell=True,timeout=5)
+            subprocess.call('7z x "{}" -o"{}"'.format(f,head), shell=True,timeout=5)
+            subprocess.call('del "{}"'.format(f), shell=True,timeout=5)
         except:
             print ('Problems with: ',tail)
     return
