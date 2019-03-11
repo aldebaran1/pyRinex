@@ -36,6 +36,7 @@ def getSingleRxUrl(year, day, F, db, rxn, hr=False):
     F.retrlines('LIST', d.append)
     # Find the files
     # CDDIS db
+    stations = []
     if db == 'cddis' and not hr:
         if isinstance(rxn, str):
             match = rxn + day + '0.' + year[-2:] + 'o.Z'
@@ -160,6 +161,7 @@ def getStateList(year, day, F, db, rxn=None, hr=False):
     return stations
 
 def getRinexObs(year,day,db,odir,rx=None, dllist=None, 
+                fix:bool=False,
                 hr:bool = False,
                 force:bool=False):
     """
@@ -196,23 +198,19 @@ def getRinexObs(year,day,db,odir,rx=None, dllist=None,
         print ('Error - day has to be a string 0-365')
         
     # Complete the save directory path
-    if not os.path.exists(odir+year+des+day+des):
-        if not os.path.exists(odir+year+des):
-            if not os.path.exists(odir + year + des):
-                try:
-                    subprocess.call('mkdir "{}"'.format(odir + year + des), shell=True)
-                except:
-                    print ('Cant make the directory')
-        try:
-            subprocess.call('mkdir "{}"'.format(odir + year + des + day + des), shell=True)
-        except:
-            print ('Cant make the directory')
-    odir += year + des + day + des
-#    if not os.path.exists(odir):
-#        try:
-#            subprocess.call('mkdir "{}"'.format(odir), shell=True)
-#        except:
-#            print ('Cant make the directory')
+    if not fix:
+        if not os.path.exists(odir+year+des+day+des):
+            if not os.path.exists(odir+year+des):
+                if not os.path.exists(odir + year + des):
+                    try:
+                        subprocess.call('mkdir "{}"'.format(odir + year + des), shell=True)
+                    except:
+                        print ('Cant make the directory')
+            try:
+                subprocess.call('mkdir "{}"'.format(odir + year + des + day + des), shell=True)
+            except:
+                print ('Cant make the directory')
+        odir += year + des + day + des
     # Reasign dllist from yaml into rx [list]
     if dllist is not None and isinstance(dllist,str):
         if dllist[-5:] == '.yaml':
@@ -324,15 +322,16 @@ if __name__ == '__main__':
                    dl_list.yaml', default=None)
     p.add_argument('-f', '--force', help='Download anyway, despite the file already exists',
                    action = 'store_true')
-    p.add_argument('-g', '--highrate', help = 'High rate data if available', 
+    p.add_argument('--highrate', help = 'High rate data if available', 
+                   action='store_true')
+    p.add_argument('--fixpath', help = 'Fix the odir path?', 
                    action='store_true')
     
     P = p.parse_args()
     if P.db == 'all':
         a = ['cors', 'cddis', 'euref', 'unavco']
         for db in a:
-            getRinexObs(P.year, P.day, db, P.dir, rx=P.rx, dllist=P.dllist, hr=P.highrate, force=P.force)
-            
+            getRinexObs(P.year, P.day, db, P.dir, rx=P.rx, dllist=P.dllist, hr=P.highrate, force=P.force, fix=P.fixpath)
     else:
-        getRinexObs(P.year, P.day, P.db, P.dir, rx=P.rx, dllist=P.dllist, hr=P.highrate, force=P.force)
+        getRinexObs(P.year, P.day, P.db, P.dir, rx=P.rx, dllist=P.dllist, hr=P.highrate, force=P.force, fix=P.fixpath)
             

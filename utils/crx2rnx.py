@@ -45,11 +45,14 @@ def crx2rx(folder, delete=False, timeout=10):
     """
     suffix = ['*.**d']
     for wlstr in suffix:
-        filestr = os.path.join(folder,wlstr)
-        flist = unique(sorted(glob.glob(filestr)))
-        print (flist)
-        for f in flist:
-            unzip(f, delete=delete, timeout=timeout)
+        if os.path.isdir(folder):
+            filestr = os.path.join(folder,wlstr)
+            flist = unique(sorted(glob.glob(filestr)))
+            print ('Decompressing {} files in the folder'.format(len(flist)))
+            for f in flist:
+                unzip(f, delete=delete, timeout=timeout)
+        else:
+            unzip(folder, delete=delete, timeout=timeout)
     
     if delete:
         suffix.append('*.crx')
