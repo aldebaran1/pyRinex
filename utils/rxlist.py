@@ -16,12 +16,6 @@ from pymap3d import ecef2geodetic
 def getRxList(folder, sufix):
     filestr = os.path.join(folder,sufix)
     flist = sorted(glob.glob(filestr))
-#    print (folder)
-#    print (sufix)
-#    rx = []
-#    for f in flist:
-#        head, tail = os.path.split(f)
-#        rx.append(tail[0:8])
     return flist
 
 def writeRxlist2HDF(obsfolder='/media/smrak/Eclipse2017/Eclipse/cors/all/233/',
@@ -39,11 +33,13 @@ def writeRxlist2HDF(obsfolder='/media/smrak/Eclipse2017/Eclipse/cors/all/233/',
     if listfilename is None:
         listfilename = obsfolder
     head, tail = os.path.split(listfilename)
+    year = tail[-3:-1]
+    doy = tail[4:7]
     if tail == '':
-        listfilename+='gpsrxlist.h5'
+        listfilename = listfilename + 'rxlist{}.{}.h5'.format(doy,year)
     if listfilename[-3:] != '.h5':
-        listfilename+='.h5'
-    print ('NUmber of receivers in the folder: ', len(rxlist))
+        listfilename += '.h5'
+    print ('Number of receivers in the folder: ', len(rxlist))
     c = 0
     table = nan*zeros((len(rxlist),2))
     for fn in rxlist:
@@ -64,6 +60,8 @@ def writeRxlist2HDF(obsfolder='/media/smrak/Eclipse2017/Eclipse/cors/all/233/',
                     rec_lat, rec_lon, rec_alt = ecef2geodetic(rx_xyz[0], rx_xyz[1], rx_xyz[2])
                 else:
                     print ('Cant find the position of the gps receiver: {}'.format(fn))
+                    rec_lat = nan
+                    rec_lon = nan
             table[c,:] = [rec_lat, rec_lon]
             c+=1
         except Exception as e:
@@ -85,7 +83,7 @@ if __name__ == '__main__':
     p.add_argument('folder',type=str)
     p.add_argument('-o', '--odir',type=str, help='Output directory', default=None)
     p.add_argument('-n', '--filename', help='list filename',type=str, default='')
-    p.add_argument('-s', '--sufix', help='obs suffix to take? *.*o; *.*d; or *.yaml (default)',type=str, default='.o')
+    p.add_argument('-s', '--sufix', help='obs suffix to take? *.*o; *.*d; or *.yaml (default)',type=str, default='*.*d')
     P = p.parse_args()
     
 
