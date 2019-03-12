@@ -9,10 +9,24 @@ Created on Wed May  9 17:24:03 2018
 from six.moves.urllib.parse import urlparse
 import ftplib
 import subprocess
+import os
+import platform
+from dateutil import parser
 
-
-def unzip(f):
-    subprocess.call('gzip -d ' + f, shell=True)
+def unzip(f, timeout=10):
+    head, tail = os.path.split(f)
+    print ('Unzipping: ', tail)
+    if platform.system() == 'Linux':
+        try:
+            subprocess.call('gzip -d ' + f, shell=True, timeout=timeout)
+        except:
+            print ('Problems with: ',tail)
+    elif platform.system() == 'Windows':
+        try:
+            subprocess.call('7z x "{}" -o"{}"'.format(f,head), shell=True,timeout=timeout)
+            subprocess.call('del "{}"'.format(f), shell=True, timeout=timeout)
+        except:
+            print ('Problems with: ', tail)
     return
 
 def download(F, rx, filename):
@@ -23,23 +37,32 @@ def download(F, rx, filename):
     except:
         pass
 
-def getRinexNav(year,day,odir,const='gps'):
+def getRinexNav(date:str = None,
+                odir:str = None,
+                const:str = 'gps'):
     """
-    year,day: integer
+    year,doy: integer
     db: the name of the database
     odif: final directory to save the rinex files
     """
     # Parse cors url address
     url =  urlparse('ftp://geodesy.noaa.gov/cors/rinex/')
-    # Correct spelling to unify the length (char) of the day in year (DOY)
-    if len(str(day)) == 2:
-        day = '0'+str(day)
-    elif len(str(day)) == 1:
-        day = '00'+str(day)
-    elif len(str(day)) == 3:
-        day = str(day)
+    # Parse date
+    try:
+        dt = parser.parse(date)
+    except Exception as e:
+        raise (e)
+    year = str(dt.year)
+    doy = dt.timetuple().tm_yday
+    # Correct spelling to unify the length (char) of the doy in year (DOY)
+    if len(str(doy)) == 2:
+        doy = '0' + str(doy)
+    elif len(str(doy)) == 1:
+        doy = '00' + str(doy)
+    elif len(str(doy)) == 3:
+        doy = str(doy)
     else: 
-        print ('Error - day has to be a string 0-365')
+        print ('Error - Soomething is wrong with your day of year (DOY)')
     
     # Constellation navigation file variable
     sct = {'gps' : 'n',
@@ -47,9 +70,9 @@ def getRinexNav(year,day,odir,const='gps'):
            'gallileo' : 'e'}
     # Open a connection to the FTP address
     with ftplib.FTP(url[1],'anonymous','guest',timeout=15) as F:
-        rpath = url[2] + '/' + year + '/' + day + '/'
+        rpath = url[2] + '/' + year + '/' + doy + '/'
         F.cwd(rpath)
-        urlrx = 'brdc' +day + '0.' + year[-2:]+sct[const]+'.gz'
+        urlrx = 'brdc' +doy + '0.' + year[-2:]+sct[const]+'.gz'
         print (urlrx)
         try:
             # urlrx must in in a format "nnnDDD0.YYo.xxx"
@@ -61,11 +84,10 @@ def getRinexNav(year,day,odir,const='gps'):
 if __name__ == '__main__':
     from argparse import ArgumentParser
     p = ArgumentParser()
-    p.add_argument('year',type=str)
-    p.add_argument('day',type=str)
-    p.add_argument('dir',type=str, help='destination directory')
-    p.add_argument('-t', '--sct',type=str, help='constellation type',default='gps')
+    p.add_argument('date', type=str, help='Date format YYYY-mm-dd')
+    p.add_argument('dir', type=str, help='destination directory')
+    p.add_argument('--sct', type=str, help='constellation type',default='gps')
     
     P = p.parse_args()
     # Get file
-    getRinexNav(P.year, P.day, P.dir, const=P.sct)
+    getRinexNav(date = P.date, odir = P.dir, const = P.sct)
