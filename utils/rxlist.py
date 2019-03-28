@@ -19,7 +19,6 @@ def getRxList(folder, sufix):
     for sx in sx:
         filestr = os.path.join(folder, sx)
         flist += sorted(glob.glob(filestr))
-        print (len(flist))
     return flist
 
 def writeRxlist2HDF(obsfolder='/media/smrak/Eclipse2017/Eclipse/cors/all/233/',
@@ -51,12 +50,14 @@ def writeRxlist2HDF(obsfolder='/media/smrak/Eclipse2017/Eclipse/cors/all/233/',
     c = 0
     table = nan*zeros((len(rxlist),2))
     for fn in rxlist:
+        sx = os.path.splitext(fn)[1]
         try:
-            if sufix == '*.yaml':
+            if sx.endswith('.yaml'):
                 stream = yaml.load(open(fn, 'r'))
                 rx_xyz = stream.get('APPROX POSITION XYZ')
                 rec_lat, rec_lon, rec_alt = ecef2geodetic(rx_xyz[0], rx_xyz[1], rx_xyz[2])
-            elif sufix == '*.*o' or sufix == '*.*d':
+            
+            elif sx.endswith('o') or sx.endswith('d'):
                 hdr = grx.rinexheader(fn)
                 if 'position_geodetic' in hdr:
                     rec_lat, rec_lon, rec_alt = hdr['position_geodetic']
@@ -91,7 +92,9 @@ if __name__ == '__main__':
     p.add_argument('folder',type=str)
     p.add_argument('-o', '--odir',type=str, help='Output directory', default=None)
     p.add_argument('-n', '--filename', help='list filename',type=str, default='')
-    p.add_argument('-s', '--sufix', help='obs suffix to take? *.*o; *.*d; or *.yaml (default = *.*d,*.*o)',type=str, default='*.*d,*.*o')
+    p.add_argument('-s', '--sufix', 
+                   help='obs suffix to take? *.*o; *.*d; or *.yaml (default = *.*d,*.*o)',
+                   type=str, default='*.*d,*.*o')
     P = p.parse_args()
     
 
