@@ -342,6 +342,12 @@ if __name__ == '__main__':
             getRinexObs(date = P.date, db = db, 
                         odir = P.dir, rx = P.rx, dllist = P.dllist, 
                         hr = P.highrate, force = P.force, fix = P.fixpath)
+    elif P.db == 'conus':
+        a = ['cors', 'cddis', 'unavco']
+        for db in a:
+            getRinexObs(date = P.date, db = db, 
+                        odir = P.dir, rx = P.rx, dllist = P.dllist, 
+                        hr = P.highrate, force = P.force, fix = P.fixpath)
     else:
         getRinexObs(date = P.date, db = P.db, odir = P.dir, 
                     rx = P.rx, dllist = P.dllist, hr = P.highrate, 

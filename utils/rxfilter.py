@@ -30,7 +30,7 @@ def filterandsave(fn: str = None, ofn: str = None,
 
     assert ofn is not None
     if os.path.isdir(ofn):
-        ofn = os.path.splitext(fn)[0] + '.yaml'
+        ofn = os.path.join(os.path.splitext(ofn)[0], os.path.split(fn)[1]) +  '.yaml'
     if os.path.splitext(ofn)[1] != 'yaml':
         ofn = os.path.splitext(ofn)[0] + '.yaml'
     #Get data and locations

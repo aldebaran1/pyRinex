@@ -14,12 +14,16 @@ from numpy import nan, zeros
 from pymap3d import ecef2geodetic
 
 def getRxList(folder, sufix):
-    filestr = os.path.join(folder,sufix)
-    flist = sorted(glob.glob(filestr))
+    sx = sufix.split(',')
+    flist = []
+    for sx in sx:
+        filestr = os.path.join(folder, sx)
+        flist += sorted(glob.glob(filestr))
+        print (len(flist))
     return flist
 
 def writeRxlist2HDF(obsfolder='/media/smrak/Eclipse2017/Eclipse/cors/all/233/',
-                    sufix='*.yaml',listfilename=None):
+                    sufix='*.*d',listfilename=None):
     """
     Make a list of receivers in a given folder, ordered by their geographical
     location. The list is organized as hdf5 file.
@@ -32,10 +36,14 @@ def writeRxlist2HDF(obsfolder='/media/smrak/Eclipse2017/Eclipse/cors/all/233/',
     rxlist = getRxList(obsfolder, sufix)
     if listfilename is None:
         listfilename = obsfolder
+    assert len(rxlist) > 0
     head, tail = os.path.split(listfilename)
     year = tail[-3:-1]
     doy = tail[4:7]
     if tail == '':
+        F = os.path.expanduser(listfilename).split(os.sep)
+        year = F[-3]
+        doy = F[-2]
         listfilename = listfilename + 'rxlist{}.{}.h5'.format(doy,year)
     if listfilename[-3:] != '.h5':
         listfilename += '.h5'
@@ -83,7 +91,7 @@ if __name__ == '__main__':
     p.add_argument('folder',type=str)
     p.add_argument('-o', '--odir',type=str, help='Output directory', default=None)
     p.add_argument('-n', '--filename', help='list filename',type=str, default='')
-    p.add_argument('-s', '--sufix', help='obs suffix to take? *.*o; *.*d; or *.yaml (default)',type=str, default='*.*d')
+    p.add_argument('-s', '--sufix', help='obs suffix to take? *.*o; *.*d; or *.yaml (default = *.*d,*.*o)',type=str, default='*.*d,*.*o')
     P = p.parse_args()
     
 
